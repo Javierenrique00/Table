@@ -10,6 +10,8 @@ export class TableComponent implements OnInit {
   tablesOptions:any[]=[];
   mainTable: string="";
   visibleTable: Boolean=false;
+  // table2="hero";
+  // table3="color";
 
   constructor(
     private httpService: HttpapiService

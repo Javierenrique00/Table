@@ -16,6 +16,8 @@ export class ShowTableComponent implements OnInit {
   param: ParamTable;
   controlTable : FormInput[][]=[];
   totalRegistros: number = 0;
+  refData: {}={}; //--son los registros indexados por llave del nombre "Referenciado" en la tabla principal ej: refData["color"][id]={key:3 data:"3-rojo;"}
+  refTableName:string[]=[];
 
   constructor(
     private httpService: HttpapiService
@@ -65,8 +67,97 @@ export class ShowTableComponent implements OnInit {
   update_ControlTable(){
     this.getData(this.mainTable,this.param.paramReturn(),this.defTable)
     .subscribe(
-      data =>this.controlTable=data
+      data =>{
+        this.controlTable=data;
+        this.loadReferenceData(this.controlTable,this.defTable);
+      }
     );
+  }
+
+
+  loadReferenceData(controlTable:FormInput[][],defTable : TableColumn[]){
+    let refMax=0;
+    let refAct=0;
+    let search:string[]=[];
+    let colName:string[]=[];
+    let refField:string[]=[];
+    this.refTableName=[];
+    controlTable.forEach( //--Saca todas las referencias que hay que buscar
+      row => {
+        row.forEach(
+          col =>{
+            if(col.type=="reference"){
+              let indice=this.checkColName(col.column,colName);
+              if(indice!=-1){
+                search[indice]+="("+col.refField+"="+col.value+") OR ";
+              }
+              else {
+                colName.push(col.column);
+                search.push("("+col.refField+"="+col.value+") OR ");
+                this.refTableName.push(col.refTable);
+                refField.push(col.refField);
+              }
+            }
+          }
+        )
+
+      })
+      //--trae los datos de referencia
+      search.forEach(
+        (dat,indice)=>{
+          
+          let param={};
+          param["limit"]="50";
+          param["include_count"]="true";
+          param["filter"]=dat.slice(0,dat.length-4); //--- Borra el ultimo OR  
+          //console.log("Table:",tableName[indice]+" filter="+ JSON.stringify(param) );  
+          //console.log("Launch Indice", indice+" "+this.refTableName[indice]);               
+          this.httpService.getDataTable(this.refTableName[indice],param).subscribe(
+            res=>{
+              let datos= res.data; 
+              let options: any[]=[];
+              datos.forEach(
+                row=>{
+                  let opcion="";
+                  Object.keys(row).forEach(elem=> opcion+= row[elem]+";");
+                  options.push({key: row[refField[indice]], value: opcion.slice(0,30)});
+                })
+                
+                this.refData[colName[indice]]=options;
+                            
+              //console.log("refData",this.refData);
+
+              //----pone los campos de options para seleccionar
+              controlTable.forEach( 
+                fila => {
+                  fila.forEach(
+                    columna =>{
+                      if(columna.type=="reference"){
+                        columna.options=this.refData[columna.column];
+                      }
+                    });
+                  });
+
+
+            })
+        });
+
+
+
+  }
+
+  //--devuelve el indice del nombre, si el nombre no está devuelve -1
+  checkColName(name,colName:string[]):number{
+    let indice=0;
+    let longitud=colName.length;
+    if(longitud!=0){
+      while(colName[indice]!=name && indice<longitud){
+        indice+=1;
+      }
+      if(indice==longitud) return -1;
+      return indice;
+    }
+    else return -1;
   }
 
 
@@ -110,8 +201,25 @@ export class ShowTableComponent implements OnInit {
           return controlTable;
       })
 
+  }
+
+
+  onEditRow(i:string){
+    this.controlTable[i].forEach(
+      (control) =>{
+        control.disabled=!control.disabled;
+      }
+    );
+  }
+
+onDelete(i:string){
+    //console.log("BORRANDO ",this.controlTable[i][0].id);
+    this.httpService.remove(this.mainTable,this.controlTable[i][0].id).subscribe(
+      result => this.update_ControlTable()
+    )
 
   }
+
 
 
   onFilter(){

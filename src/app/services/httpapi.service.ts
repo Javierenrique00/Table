@@ -87,8 +87,18 @@ getDataTable(table: string,params ? :any): Observable<any>{
 
 };
 
-
-
+remove(table: string, id: string):Observable<any> {
+    var queryHeaders = new Headers();
+    queryHeaders.append('Content-Type', 'application/json');
+    queryHeaders.append('X-Dreamfactory-Session-Token', localStorage.getItem('session_token'));
+    queryHeaders.append('X-Dreamfactory-API-Key', constants.DREAMFACTORY_API_KEY);
+    return this.httpService
+        .delete(this.dataUrl+table + '/' + id, { headers: queryHeaders })
+        .map((response) => {
+            var result: any = response.json();
+            return result.id;
+        }).catch(this.handleError);
+}
 
 
 
