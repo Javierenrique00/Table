@@ -101,6 +101,22 @@ remove(table: string, id: string):Observable<any> {
 }
 
 
+saveNew(table: string,objetoGrabar:any):Observable<any> {
+    var queryHeaders = new Headers();
+    queryHeaders.append('Content-Type', 'application/json');
+    queryHeaders.append('X-Dreamfactory-Session-Token', localStorage.getItem('session_token'));
+    queryHeaders.append('X-Dreamfactory-API-Key', constants.DREAMFACTORY_API_KEY);
+    let options = new RequestOptions({ headers: queryHeaders });
+
+        //delete hero.id;
+        return this.httpService.post(this.dataUrl + table, JSON.stringify({ resource: [objetoGrabar] }), options)
+            .map((data) => {
+                return data;
+            }).catch(this.handleError);
+    
+  }
+
+
 
 
 

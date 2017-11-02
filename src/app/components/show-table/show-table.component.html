@@ -12,8 +12,22 @@ example: column like "%word%" ; id=50
         <button type="button" (click)="onOrder(columna.name)"> 
           {{columna.simboloOrder}}
         </button>
-  </td>
+    </td>
   </tr>
+
+<!-- NUEVO REGISTRO  -->
+
+  <tr>
+    <td *ngFor="let columna of newRegistro">
+        <app-dynamic-input [tipoInput]="columna" [mainTable]="mainTable"></app-dynamic-input>
+    </td>
+    <button type="button" (click)="onNew()"> 
+      (SAVE)
+  </button>
+  </tr>
+  <!-- ----------------- -->
+
+
   <tr *ngFor="let row of controlTable; let i = index">
     <td *ngFor="let col of row; let j = index">
         <app-dynamic-input [tipoInput]="col" [mainTable]="mainTable"></app-dynamic-input>

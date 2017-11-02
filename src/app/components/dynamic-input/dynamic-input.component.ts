@@ -24,4 +24,38 @@ export class DynamicInputComponent implements OnInit {
   ngOnInit() {
   }
 
+
+  onSubmit(valor:string){
+    
+    if(this.tipoInput.type=="reference") this.tipoInput.value=valor;
+    console.log("Valor seleccionado:",valor);
+//    console.log("CADENA:",this.tipoInput.value+" id=",this.tipoInput.id);
+
+    if(this.tipoInput.value=="-----") {
+      this.tipoInput.value="";
+      this.tipoInput.type="search"
+      this.tipoInput.options=[];
+    }
+    else{
+      if(this.tipoInput.id!=""){
+        let objeto : {}={};
+        if(this.tipoInput.type=="search") objeto[this.tipoInput.column]=valor;
+        else objeto[this.tipoInput.column]=this.tipoInput.value;
+
+
+        console.log("GRABAR OBJETO:",objeto);
+        //-----Graba el campo modificado a la DB
+        // this.patch(this.mainTable,this.tipoInput.id,objeto)
+        // .subscribe(
+        //   result => {
+        //     console.log("Grabado OK",result)
+        //   },
+        //   err => console.error("ERROR PATCH ",err),
+        //   () => {} 
+        // )
+      }
+    }
+  }
+
+
 }

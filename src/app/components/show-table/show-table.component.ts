@@ -17,7 +17,7 @@ export class ShowTableComponent implements OnInit {
   controlTable : FormInput[][]=[];
   totalRegistros: number = 0;
   refData: {}={}; //--son los registros indexados por llave del nombre "Referenciado" en la tabla principal ej: refData["color"][id]={key:3 data:"3-rojo;"}
-  refTableName:string[]=[];
+  newRegistro : FormInput[]=[];
 
   constructor(
     private httpService: HttpapiService
@@ -81,7 +81,7 @@ export class ShowTableComponent implements OnInit {
     let search:string[]=[];
     let colName:string[]=[];
     let refField:string[]=[];
-    this.refTableName=[];
+    let refTableName:string[]=[];
     controlTable.forEach( //--Saca todas las referencias que hay que buscar
       row => {
         row.forEach(
@@ -94,7 +94,7 @@ export class ShowTableComponent implements OnInit {
               else {
                 colName.push(col.column);
                 search.push("("+col.refField+"="+col.value+") OR ");
-                this.refTableName.push(col.refTable);
+                refTableName.push(col.refTable);
                 refField.push(col.refField);
               }
             }
@@ -112,7 +112,7 @@ export class ShowTableComponent implements OnInit {
           param["filter"]=dat.slice(0,dat.length-4); //--- Borra el ultimo OR  
           //console.log("Table:",tableName[indice]+" filter="+ JSON.stringify(param) );  
           //console.log("Launch Indice", indice+" "+this.refTableName[indice]);               
-          this.httpService.getDataTable(this.refTableName[indice],param).subscribe(
+          this.httpService.getDataTable(refTableName[indice],param).subscribe(
             res=>{
               let datos= res.data; 
               let options: any[]=[];
@@ -123,6 +123,7 @@ export class ShowTableComponent implements OnInit {
                   options.push({key: row[refField[indice]], value: opcion.slice(0,30)});
                 })
                 
+                options.push({key: "-----", value: "More values..."});
                 this.refData[colName[indice]]=options;
                             
               //console.log("refData",this.refData);
@@ -137,12 +138,13 @@ export class ShowTableComponent implements OnInit {
                       }
                     });
                   });
-
-
+                  this.newRegistro=[];
+                  this.initNewRegister();
             })
         });
 
-
+        this.newRegistro=[];
+        this.initNewRegister();
 
   }
 
@@ -159,6 +161,32 @@ export class ShowTableComponent implements OnInit {
     }
     else return -1;
   }
+
+  initNewRegister(){
+    this.newRegistro=[];
+    this.defTable.forEach(
+      (field)=>{
+        
+        let options: any[]=[];
+        if(field.type=="reference"){
+          //-- debe cargar las referencias posibles
+          options=this.refData[field.name];
+        }
+          this.newRegistro.push( new FormInput(
+            "",           //-id
+            field.type,   //-tipo
+            "new",        //-name
+            "",           //-value
+            field.name,   //-column
+            false,        //-disabled
+            options,       //-options -> seleccion multiple
+            field.refTable,
+            field.refField,
+            " " //-Debe dejar un campo diferente de "" para que inicialize el observable de busqueda
+          ));
+      });
+  }
+
 
 
   getData(tabla:string,param:any,defTable:TableColumn[]):Observable<FormInput[][]>{
@@ -264,6 +292,20 @@ onDelete(i:string){
     if(this.param.offset<0) this.param.offset=0;
     this.update_ControlTable();
   }
+
+  onNew(){
+      //--- Graba los datos de un nuevo registro
+      let objeto : {}={};
+      this.newRegistro.forEach(
+        (obj)=>{
+          if(obj.column!="id") objeto[obj.column]=obj.value;          
+        });
+      console.log("Grabando Nuevo ",objeto);
+      this.httpService.saveNew(this.mainTable,objeto).subscribe(
+        result => this.update_ControlTable() ,
+        err => console.error("Error grabando nuevo ",err))
+    }
+  
 
 
 
