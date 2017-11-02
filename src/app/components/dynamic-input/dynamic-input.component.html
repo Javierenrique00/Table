@@ -1,0 +1,14 @@
+<form novalidate (ngSubmit)= "onSubmit(tipoInput.value)" >
+  <div [ngSwitch]="tipoInput.type">
+    <input *ngSwitchCase="'string'" [(ngModel)]="tipoInput.value" name="tipoInput.name" [attr.disabled]="tipoInput.disabled?'':null">
+    <label *ngSwitchCase="'id'"> {{tipoInput.value}}</label>
+    <!-- <label *ngSwitchCase="'reference'"> {{tipoInput.value}}</label> -->
+    <select *ngSwitchCase="'reference'"  (change)="onSubmit(selectedCategory.value)" [attr.disabled]="tipoInput.disabled?'':null" #selectedCategory>
+        <option *ngFor="let opt of tipoInput.options" [value]="opt.key" [selected]="tipoInput.value == opt.key" >{{opt.value}}</option>
+    </select>
+    <input *ngSwitchCase="'search'" #searchBox id="search-box"  [attr.disabled]="tipoInput.disabled?'':null" (keyup)="onSearch(searchBox.value)">
+    <select *ngSwitchCase="'search'"  (change)="onSubmit(selectedCategory.value)" [attr.disabled]="tipoInput.disabled?'':null" #selectedCategory>
+      <option *ngFor="let opt of tipoInput.options" [value]="opt.key" [selected]="tipoInput.value == opt.key" >{{opt.value}}</option>
+  </select>
+  </div>
+</form>

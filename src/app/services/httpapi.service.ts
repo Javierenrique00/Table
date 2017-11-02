@@ -5,6 +5,8 @@ import {Observable} from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 
+import { TableColumn, Columns } from "../models/table";
+
 @Injectable()
 export class HttpapiService {
 //  baseResourceUrl: string = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/db/_table/hero';
@@ -36,7 +38,60 @@ export class HttpapiService {
         return result.resource;
     }).catch(this.handleError);
 
+  };
+
+getSchemaTable(table: string): Observable<TableColumn[]>{
+    var queryHeaders = new Headers();
+    queryHeaders.append('Content-Type', 'application/json');
+    queryHeaders.append('X-Dreamfactory-Session-Token', localStorage.getItem('session_token'));
+    queryHeaders.append('X-Dreamfactory-API-Key', constants.DREAMFACTORY_API_KEY);
+
+    var options = new RequestOptions({ headers: queryHeaders});
+
+    return this.httpService
+    .get(this.squemaUrl+table, options)
+    .map((response) => {
+        var result: any = response.json();
+        let defColumn: Array < TableColumn > = [];
+            result.field.forEach((field) => {
+            var defCol=new TableColumn(field.name,field.label,field.type,0,"O","",field.ref_table,field.ref_field);
+            defColumn.push(defCol);
+         });
+
+        return defColumn;
+    }).catch(this.handleError);
+
+  };
+
+getDataTable(table: string,params ? :any): Observable<any>{
+    var queryHeaders = new Headers();
+    queryHeaders.append('Content-Type', 'application/json');
+    queryHeaders.append('X-Dreamfactory-Session-Token', localStorage.getItem('session_token'));
+    queryHeaders.append('X-Dreamfactory-API-Key', constants.DREAMFACTORY_API_KEY);
+
+    var options = new RequestOptions({ headers: queryHeaders, params: params});
+
+    return this.httpService
+    .get(this.dataUrl+table, options)
+    .map((response) => {
+        var result: any = response.json();
+        let filas: Array < Columns > = [];
+        
+            result.resource.forEach((cols) => {
+            
+            filas.push(cols);
+         });
+
+        return { data: filas, count: result.meta }
+    }).catch(this.handleError);
+
 };
+
+
+
+
+
+
 
 
 

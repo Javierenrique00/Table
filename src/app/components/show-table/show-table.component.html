@@ -1,0 +1,49 @@
+<br>
+Filter: <input [(ngModel)]=param.filter>
+<button type="button" (click)="onFilter()"> 
+    Filter
+</button>
+example: column like "%word%" ; id=50
+<br>
+<br>
+<table>
+  <tr>
+    <td *ngFor="let columna of defTable">{{columna.label}}
+        <button type="button" (click)="onOrder(columna.name)"> 
+          {{columna.simboloOrder}}
+        </button>
+  </td>
+  </tr>
+  <tr *ngFor="let row of controlTable; let i = index">
+    <td *ngFor="let col of row; let j = index">
+        <app-dynamic-input [tipoInput]="col" [mainTable]="mainTable"></app-dynamic-input>
+    </td>
+    <td>
+        <button type="button" (click)="onEditRow(i)"> 
+            (EDIT)
+        </button>
+    </td>
+    <td>
+        <button type="button" (click)="onDelete(i)"> 
+            (DEL)
+        </button>
+    </td>
+  </tr>
+
+</table>
+
+<button type="button" (click)="onFirst()"> 
+  FIRST
+</button>
+<button type="button" (click)="onNext()"> 
+  NEXT >>
+</button>
+{{param.offset}}
+<button type="button" (click)="onPrev()"> 
+  << PREV
+</button>
+<button type="button" (click)="onLast()"> 
+  LAST
+</button>
+<br>
+Total: {{totalRegistros}}

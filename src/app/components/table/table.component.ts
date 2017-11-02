@@ -9,6 +9,7 @@ import { HttpapiService } from "../../services/httpapi.service";
 export class TableComponent implements OnInit {
   tablesOptions:any[]=[];
   mainTable: string="";
+  visibleTable: Boolean=false;
 
   constructor(
     private httpService: HttpapiService
@@ -29,9 +30,7 @@ export class TableComponent implements OnInit {
 
   onSelectTable(table:string){
     this.mainTable=table;
-    //this.getTable(this.mainTable);
-    console.log("TABLA:",this.mainTable);
-   
+    if(table!="") this.visibleTable=true;else this.visibleTable=false;   
   }
 
 
