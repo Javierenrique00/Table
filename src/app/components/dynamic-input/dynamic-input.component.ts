@@ -19,16 +19,60 @@ export class DynamicInputComponent implements OnInit {
   @Input() tipoInput: FormInput;
   @Input() mainTable: string;
 
-  constructor() { }
+  searchObservable:Observable<string>;
+  searchObserver:Observer<string>;
+
+  constructor(
+    private httpService: HttpapiService
+  ) { }
 
   ngOnInit() {
+    if(this.tipoInput.type=="reference"){
+      //-- Crea el observable que maneja la entrada del campo input
+      this.searchObservable=new Observable(
+        (observer:Observer<string>)=>{
+          this.searchObserver=observer;
+        });
+        //-- crea el observable defTable
+
+        this.httpService.getSchemaTable(this.tipoInput.refTable).subscribe(
+          (defTable) =>{
+            this.searchObservable.debounceTime(300).distinctUntilChanged().map(
+              (valor) => this.buildParam(valor,defTable)
+            ).subscribe(
+              param=>{
+                this.httpService.getDataTable(this.tipoInput.refTable,param).subscribe(
+                  dat =>{
+                    let dato:any[]=dat.data;
+                    //console.log("FILTER_DATA ",dat.data);
+                    let options: any[]=[];
+                    options.push({key:"-----",value:"Select..."});
+                    dato.forEach(
+                      row=>{
+                        let opcion="";
+                        Object.keys(row).forEach(elem=> opcion+= row[elem]+";"); //-- Recorre todas las llaves del objeto
+                        options.push({key:row[this.tipoInput.refField], value:(opcion.slice(0,30))});
+                      })
+                    this.tipoInput.options=options;
+                  },
+                  (err)=> console.error("Error ",err)
+                )
+              }
+            )
+        
+          },
+          (err)=> console.error("Error ",err)
+        );
+
+      }
+
   }
 
 
   onSubmit(valor:string){
     
     if(this.tipoInput.type=="reference") this.tipoInput.value=valor;
-    console.log("Valor seleccionado:",valor);
+    //console.log("Valor seleccionado:",valor);
 //    console.log("CADENA:",this.tipoInput.value+" id=",this.tipoInput.id);
 
     if(this.tipoInput.value=="-----") {
@@ -37,24 +81,59 @@ export class DynamicInputComponent implements OnInit {
       this.tipoInput.options=[];
     }
     else{
-      if(this.tipoInput.id!=""){
         let objeto : {}={};
-        if(this.tipoInput.type=="search") objeto[this.tipoInput.column]=valor;
+        if(this.tipoInput.type=="search") { 
+          objeto[this.tipoInput.column]=valor;
+          this.tipoInput.value=valor
+          //console.log("tipo search - valor",valor);
+        }
         else objeto[this.tipoInput.column]=this.tipoInput.value;
 
-
-        console.log("GRABAR OBJETO:",objeto);
+      if(this.tipoInput.id!=""){
+        //console.log("GRABAR OBJETO:",objeto);
         //-----Graba el campo modificado a la DB
-        // this.patch(this.mainTable,this.tipoInput.id,objeto)
-        // .subscribe(
-        //   result => {
-        //     console.log("Grabado OK",result)
-        //   },
-        //   err => console.error("ERROR PATCH ",err),
-        //   () => {} 
-        // )
+        this.httpService.patch(this.mainTable,this.tipoInput.id,objeto)
+        .subscribe(
+          result => {
+            //console.log("Grabado OK",result)
+          },
+          err => console.error("ERROR PATCH ",err),
+          () => {} 
+        )
       }
     }
+  }
+
+
+  buildParam(search:string,defTable:TableColumn[]):{} {
+    var param = {};
+    param["limit"]=100;
+    param["include_count"]="true";
+    let filterLine="";
+    //--detecta si el valor puede convertirse numericamemente para hacerlo con el id
+    if( isNaN(parseInt(search))){
+      //-- no es numero
+      defTable.forEach(col=>
+        {
+          if(col.type=="string") filterLine+=col.name+" LIKE "+"\"%"+search +"%\"" +" OR ";
+        })
+        filterLine = filterLine.slice(0,filterLine.length-4); //--Le quita el ultimo OR
+    }
+    else{
+      //-- Es numero
+        defTable.forEach(col=>
+        {
+          if(col.type=="id") filterLine+=col.name+"="+search;
+        }) 
+    }
+    param["filter"]=filterLine;
+    return param;
+  }
+
+
+
+  onSearch(busqueda:string){
+    this.searchObserver.next(busqueda);
   }
 
 

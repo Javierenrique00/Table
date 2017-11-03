@@ -116,7 +116,20 @@ saveNew(table: string,objetoGrabar:any):Observable<any> {
     
   }
 
+  patch(table: string,id: string,objetoGrabar:any):Observable<any>{
+    var queryHeaders = new Headers();
+    queryHeaders.append('Content-Type', 'application/json');
+    queryHeaders.append('X-Dreamfactory-Session-Token', localStorage.getItem('session_token'));
+    queryHeaders.append('X-Dreamfactory-API-Key', constants.DREAMFACTORY_API_KEY);
 
+    var options = new RequestOptions({ headers: queryHeaders});
+
+    return this.httpService.patch
+    (this.dataUrl+table+"/"+id, JSON.stringify(objetoGrabar), options)
+    .map((data) => {
+        return data;
+    }).catch(this.handleError);
+}
 
 
 

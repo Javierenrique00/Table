@@ -40,27 +40,6 @@ export class ShowTableComponent implements OnInit {
 
         this.update_ControlTable();
 
-
-
-        //loadAllReferenceData----
-
-
-        //this.initNewRegister(); //-- Crea el observable
-
-        //---- se suscribe al observable
-        // this.refObservable.subscribe(
-        //   (data)=>{
-        //     //-- Guarda el dato en el cache refData            
-        //     this.refdata[Object.keys(data)[0]]=data[Object.keys(data)[0]];            
-        //     this.refAct+=1;
-        //     if(this.refAct==this.refMax) this.refObserver.complete();
-        //   },
-        //   (err)=> console.error("ERROR Observable ",err),
-        //   ()=>{
-        //     this.endLoadData();
-        //   }
-        // );
-
       })
   }
 
@@ -116,6 +95,7 @@ export class ShowTableComponent implements OnInit {
             res=>{
               let datos= res.data; 
               let options: any[]=[];
+              options.push({key: "", value: "Choose Value"});
               datos.forEach(
                 row=>{
                   let opcion="";
@@ -295,17 +275,40 @@ onDelete(i:string){
 
   onNew(){
       //--- Graba los datos de un nuevo registro
+      let errorSave=false;
       let objeto : {}={};
       this.newRegistro.forEach(
         (obj)=>{
-          if(obj.column!="id") objeto[obj.column]=obj.value;          
+          if(obj.column!="id") {
+            objeto[obj.column]=obj.value;
+            if(!this.checkValues(obj.type,obj.value)) errorSave=true ;
+          }
+
         });
-      console.log("Grabando Nuevo ",objeto);
-      this.httpService.saveNew(this.mainTable,objeto).subscribe(
-        result => this.update_ControlTable() ,
-        err => console.error("Error grabando nuevo ",err))
+      //console.log("Grabando Nuevo ",objeto);
+      //console.log("NewRegistro ",this.newRegistro);
+    
+      if(!errorSave){
+        this.httpService.saveNew(this.mainTable,objeto).subscribe(
+          result => this.update_ControlTable() ,
+          err => console.error("Error grabando nuevo ",err))
+      }
+      else{
+        console.log("Error varificando valores para grabar.");
+      }
+
+
     }
   
+    checkValues(tipo,valor):boolean{
+      if(valor=="") return false
+      if(valor=="-----") return false
+    
+
+      return true;
+    }
+
+
 
 
 
