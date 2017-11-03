@@ -1,6 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { FormInput } from "../../models/form-input";
 import { HttpapiService } from "../../services/httpapi.service";
+import { CheckTypeService } from "../../services/check-type.service";
 import { TableColumn,Columns} from "../../models/table";
 import {Observable} from 'rxjs/Observable';
 import {Observer} from 'rxjs/Observer';
@@ -23,7 +24,8 @@ export class DynamicInputComponent implements OnInit {
   searchObserver:Observer<string>;
 
   constructor(
-    private httpService: HttpapiService
+    private httpService: HttpapiService,
+    private CheckType: CheckTypeService,
   ) { }
 
   ngOnInit() {
@@ -91,8 +93,7 @@ export class DynamicInputComponent implements OnInit {
 
       if(this.tipoInput.id!=""){
         //console.log("GRABAR OBJETO:",objeto);
-        //-----Graba el campo modificado a la DB
-        this.httpService.patch(this.mainTable,this.tipoInput.id,objeto)
+        if(this.CheckType.checkValues(this.tipoInput.type,this.tipoInput.value)) this.httpService.patch(this.mainTable,this.tipoInput.id,objeto)
         .subscribe(
           result => {
             //console.log("Grabado OK",result)
@@ -100,6 +101,7 @@ export class DynamicInputComponent implements OnInit {
           err => console.error("ERROR PATCH ",err),
           () => {} 
         )
+        else console.log("Error al ingresar datos - No grabado")
       }
     }
   }

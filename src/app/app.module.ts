@@ -10,6 +10,7 @@ import { TableComponent } from './components/table/table.component';
 import { HomeComponent } from './components/home/home.component';
 import { ShowTableComponent } from './components/show-table/show-table.component';
 import { DynamicInputComponent } from './components/dynamic-input/dynamic-input.component';
+import { CheckTypeService } from "./services/check-type.service"
 
 @NgModule({
   declarations: [
@@ -25,7 +26,7 @@ import { DynamicInputComponent } from './components/dynamic-input/dynamic-input.
     HttpModule,
     AppRoutingModule
   ],
-  providers: [HttpapiService],
+  providers: [HttpapiService,CheckTypeService],
   bootstrap: [HomeComponent]
 })
 export class AppModule { }

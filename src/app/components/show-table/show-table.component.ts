@@ -3,7 +3,7 @@ import { HttpapiService } from "../../services/httpapi.service";
 import { TableColumn,ParamTable } from "../../models/table";
 import { FormInput } from "../../models/form-input"
 import {Observable} from 'rxjs/Observable';
-
+import { CheckTypeService } from "../../services/check-type.service";
 
 @Component({
   selector: 'app-show-table',
@@ -20,7 +20,8 @@ export class ShowTableComponent implements OnInit {
   newRegistro : FormInput[]=[];
 
   constructor(
-    private httpService: HttpapiService
+    private httpService: HttpapiService,
+    private checkType:CheckTypeService,
   ) { }
 
   ngOnInit() {
@@ -281,12 +282,12 @@ onDelete(i:string){
         (obj)=>{
           if(obj.column!="id") {
             objeto[obj.column]=obj.value;
-            if(!this.checkValues(obj.type,obj.value)) errorSave=true ;
+            if(!this.checkType.checkValues(obj.type,obj.value)) errorSave=true ;
           }
 
         });
-      //console.log("Grabando Nuevo ",objeto);
-      //console.log("NewRegistro ",this.newRegistro);
+      console.log("Grabando Nuevo ",objeto);
+      console.log("NewRegistro ",this.newRegistro);
     
       if(!errorSave){
         this.httpService.saveNew(this.mainTable,objeto).subscribe(
@@ -300,13 +301,6 @@ onDelete(i:string){
 
     }
   
-    checkValues(tipo,valor):boolean{
-      if(valor=="") return false
-      if(valor=="-----") return false
-    
-
-      return true;
-    }
 
 
 
