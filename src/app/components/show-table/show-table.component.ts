@@ -152,6 +152,11 @@ export class ShowTableComponent implements OnInit {
         if(field.type=="reference"){
           //-- debe cargar las referencias posibles
           options=this.refData[field.name];
+          if(options==undefined){
+            options=[];
+            options.push({key: "-----", value: "Choose Value"});
+            options.push({key: "-----", value: "More values..."});
+          }
         }
           this.newRegistro.push( new FormInput(
             "",           //-id

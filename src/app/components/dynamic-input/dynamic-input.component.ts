@@ -117,7 +117,7 @@ export class DynamicInputComponent implements OnInit {
       //-- no es numero
       defTable.forEach(col=>
         {
-          if(col.type=="string") filterLine+=col.name+" LIKE "+"\"%"+search +"%\"" +" OR ";
+          if(col.type=="string") filterLine+="("+col.name+" LIKE "+"\"%"+search +"%\") OR ";
         })
         filterLine = filterLine.slice(0,filterLine.length-4); //--Le quita el ultimo OR
     }
@@ -129,6 +129,7 @@ export class DynamicInputComponent implements OnInit {
         }) 
     }
     param["filter"]=filterLine;
+    //console.log("param: ",filterLine);
     return param;
   }
 
