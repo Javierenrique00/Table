@@ -11,5 +11,7 @@ You can follow the instructions from the "Address book" example to setup an inst
 export const DREAMFACTORY_API_KEY: string = '90ae02f7ec90952ddc7937e733cccde7c49d5a4afd04fd4f5ee9988a5147e420';
 export const DREAMFACTORY_INSTANCE_URL: string = 'http://localhost:81';
 
+The project support "string", "integer", "float" and "reference" data types.
+You can adapt the project to a new supported type modifiying the files "dynamic-input.component.html" and "check-type.services.ts"
 
 ---------------------------
